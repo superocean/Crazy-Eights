@@ -22,9 +22,9 @@ public class TitleView extends View {
 	{
 		super(context);
         gameContext=context;
-        titleGraphic = BitmapFactory.decodeResource(getResources(),R.drawable.title);
-        playButton = BitmapFactory.decodeResource(getResources(),R.drawable.play);
-        playButtonHover=BitmapFactory.decodeResource(getResources(),R.drawable.play_press);
+        titleGraphic = BitmapFactory.decodeResource(getResources(),R.drawable.title_graphic);
+        playButton = BitmapFactory.decodeResource(getResources(),R.drawable.play_button_up);
+        playButtonHover=BitmapFactory.decodeResource(getResources(),R.drawable.play_button_down);
 
 	}
 	

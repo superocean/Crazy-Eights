@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merger>
 
+    <dataSet config="ComAndroidSupportAppcompatV71901.aar" >
+        <source path="E:\Android\Practice\CrazyEights\app\build\exploded-bundles\ComAndroidSupportAppcompatV71901.aar\assets" />
+    </dataSet>
     <dataSet config="main" >
-        <source path="E:\Android\Practice\CrazyEight\app\src\main\assets" />
+        <source path="E:\Android\Practice\CrazyEights\app\src\main\assets" />
     </dataSet>
     <dataSet config="debug" >
-        <source path="E:\Android\Practice\CrazyEight\app\src\debug\assets" />
+        <source path="E:\Android\Practice\CrazyEights\app\src\debug\assets" />
     </dataSet>
 
 </merger>
