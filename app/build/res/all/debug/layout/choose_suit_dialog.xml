@@ -1,0 +1,30 @@
+<LinearLayout
+    android:id="@+id/chooseSuitLayout"
+    android:layout_width="275dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_gravity="top"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView android:id="@+id/chooseSuitText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose a suit."
+        android:textSize="16sp"
+        android:layout_marginLeft="5dp"
+        android:textColor="#000000"/>
+
+
+    <Spinner
+        android:id="@+id/suitSpinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:drawSelectorOnTop="true"
+        />
+
+    <Button
+        android:id="@+id/okButton"
+        android:layout_width="125dp"
+        android:layout_height="wrap_content"
+        android:text="OK" />
+</LinearLayout><!-- From: file:/E:/Android/Practice/CrazyEights/app/src/main/res/layout/choose_suit_dialog.xml -->

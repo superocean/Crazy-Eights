@@ -1,5 +1,6 @@
 package nghia.crazyeights;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +41,8 @@ public class CrazyeightsView extends View {
     private int movingY;
     private int validRank = 8;
     private int validSuit = 0;
+    private Bitmap nextCardButton;
+    private ComputerPlayer computerPlayer = new ComputerPlayer();
 
 	public CrazyeightsView(Context context)
 	{
@@ -47,8 +55,7 @@ public class CrazyeightsView extends View {
         whitePaint.setStyle(Paint.Style.STROKE);
         whitePaint.setTextAlign(Paint.Align.LEFT);
         whitePaint.setTextSize(scale*15);
-       // myTurn=new Random().nextBoolean();
-        myTurn=true;
+        myTurn=new Random().nextBoolean();
     }
     @Override
     protected void onDraw(Canvas canvas)
@@ -78,6 +85,13 @@ public class CrazyeightsView extends View {
                     null);
         }
 
+        if (myHand.size() > 7) {
+            canvas.drawBitmap(nextCardButton,
+                    screenW-nextCardButton.getWidth()-(30*scale),
+                    screenH-nextCardButton.getHeight()-
+                            scaledCardH-(90*scale),
+                    null);
+        }
         for (int i = 0; i < myHand.size(); i++) {
             if (i == movingCardIdx) {
                 canvas.drawBitmap(myHand.get(i).getBitmap(),
@@ -85,11 +99,12 @@ public class CrazyeightsView extends View {
                         movingY,
                         null);
             } else {
-                canvas.drawBitmap
-                        (myHand.get(i).getBitmap(),
-                                i*(scaledCardW+5),
-                                screenH-scaledCardH-whitePaint.getTextSize()-
-                                        (50*scale), null);
+                if (i < 7) {
+                    canvas.drawBitmap(myHand.get(i).getBitmap(),
+                            i*(scaledCardW+5),
+                            screenH-scaledCardH-whitePaint.getTextSize()-(50*scale),
+                            null);
+                }
             }
         }
         invalidate();
@@ -114,6 +129,12 @@ public class CrazyeightsView extends View {
         drawCard(discardPile);
         validSuit = discardPile.get(0).getSuit();
         validRank = discardPile.get(0).getRank();
+        nextCardButton = BitmapFactory.decodeResource(getResources(),
+                R.drawable.arrow_next);
+        if (!myTurn)
+        {
+
+        }
     }
     public boolean onTouchEvent(MotionEvent event)
     {
@@ -157,11 +178,38 @@ public class CrazyeightsView extends View {
                 validSuit = myHand.get (movingCardIdx).getSuit();
                 discardPile.add(0, myHand.get(movingCardIdx));
                 myHand.remove(movingCardIdx);
-            }
-            movingCardIdx = -1;
+                myScore+=1;
+                }
+                if (validRank==8)
+                {
+                    showChooseSuitDialog();
+                }
+                else
+                {
+                    myTurn=false;
+                    makeComputerPlay();
+                }
+                if (movingCardIdx == -1 && myTurn &&
+                        X > (screenW/2)-(100*scale) &&
+                        X < (screenW/2)+(100*scale) &&
+                        Y > (screenH/2)-(100*scale) &&
+                        Y < (screenH/2)+(100*scale)) {
+                    if (checkForValidDraw()) {
+                        drawCard(myHand);
+                    } else {
+                        Toast.makeText(myContext, "You have a valid play.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                if (myHand.size() > 7 &&
+                        X > screenW-nextCardButton.getWidth()-(30*scale) &&
+                        Y > screenH-nextCardButton.getHeight()-scaledCardH-(90*scale) &&
+                        Y < screenH-nextCardButton.getHeight()-scaledCardH-(60*scale)) {
+                    Collections.rotate(myHand, 1);
+                }
+                movingCardIdx = -1;
                 break;
-
         }
+
         invalidate();
         return true;
     }
@@ -204,4 +252,98 @@ public class CrazyeightsView extends View {
             drawCard(oppHand);
         }
     }
+    private void showChooseSuitDialog() {
+        final Dialog chooseSuitDialog =  new Dialog(myContext);
+        chooseSuitDialog.requestWindowFeature
+                (Window.FEATURE_NO_TITLE);
+
+        chooseSuitDialog.setContentView(R.layout.choose_suit_dialog);
+
+        final Spinner suitSpinner = (Spinner)  chooseSuitDialog.findViewById(R.id.suitSpinner);
+        ArrayAdapter<CharSequence> adapter =   ArrayAdapter.createFromResource(
+                myContext, R.array.suits,
+                android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource
+                (android.R.layout.simple_spinner_dropdown_item);
+        suitSpinner.setAdapter(adapter);
+        Button okButton =
+        (Button) chooseSuitDialog.findViewById(R.id.okButton);
+        okButton.setOnClickListener(new View.OnClickListener(){
+                    public void onClick(View view){
+                        validSuit = (suitSpinner.
+                                getSelectedItemPosition()+1)*100;
+                        String suitText = "";
+                        if (validSuit == 100) {
+                            suitText = "Diamonds";
+                        } else if (validSuit == 200) {
+                            suitText = "Clubs";
+                        } else if (validSuit == 300) {
+                            suitText = "Hearts";
+                        } else if (validSuit == 400) {
+                            suitText = "Spades";
+                        }
+                        chooseSuitDialog.dismiss();
+                        Toast.makeText(myContext,
+                                "You chose " + suitText,
+                                Toast.LENGTH_SHORT).show();
+                        myTurn=false;
+                        makeComputerPlay();
+                    }
+                });
+        chooseSuitDialog.show();
+    }
+    private boolean checkForValidDraw() {
+        boolean canDraw = true;
+        for (int i = 0; i < myHand.size(); i++) {
+            int tempId = myHand.get(i).getId();
+            int tempRank = myHand.get(i).getRank();
+            int tempSuit = myHand.get(i).getSuit();
+            if (validSuit == tempSuit || validRank == tempRank
+                    ||
+                    tempId == 108 || tempId == 208 ||
+                    tempId == 308 || tempId == 408) {
+                canDraw = false;
+            }
+        }
+        return canDraw;
+    }
+    private void makeComputerPlay() {
+        int tempPlay = 0;  
+        while (tempPlay == 0) { 
+            tempPlay = computerPlayer.makePlay(oppHand,
+                    validSuit, validRank);
+            if (tempPlay == 0) {
+                drawCard(oppHand);
+            }
+        }
+        if (tempPlay == 108 || tempPlay == 208 ||
+                tempPlay == 308 || tempPlay == 408) {
+            validRank = 8;
+            validSuit =computerPlayer.chooseSuit(oppHand);
+            String suitText = "";
+            if (validSuit == 100) {
+                suitText = "Diamonds";
+            } else if (validSuit == 200) {
+                suitText = "Clubs";
+            } else if (validSuit == 300) {
+                suitText = "Hearts";
+            } else if (validSuit == 400) {
+                suitText = "Spades";
+            }
+            Toast.makeText(myContext, "Computer chose " +
+                    suitText, Toast.LENGTH_SHORT).show();
+        } else {
+            validSuit = Math.round(tempPlay/100) * 100;
+            validRank = tempPlay - validSuit;
+        }
+        for (int i = 0; i < oppHand.size(); i++) {
+            Card tempCard = oppHand.get(i);
+            if (tempPlay == tempCard.getId()) {
+                discardPile.add(0, oppHand.get(i));
+                oppHand.remove(i);
+                oppScore+=1;
+            }
+        }
+        myTurn = true;
+        }
 }
